@@ -4,6 +4,7 @@ import androidx.compose.desktop.DesktopMaterialTheme
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -49,12 +50,8 @@ fun keySection(keys: SnapshotStateList<String>) {
 }
 
 @Composable
-fun mainWindow(mainState: MutableState<Boolean>, keyState: MutableState<Boolean>) {
-    val keys = remember { mutableStateListOf<String>() }
-    val textState = remember { mutableStateOf(TextFieldValue()) }
-
-    for (i in 0..5)
-        keys.add(i.toString())
+fun mainWindow(keys: SnapshotStateList<String>, mainState: MutableState<Boolean>, keyState: MutableState<Boolean>) {
+    var textState by remember { mutableStateOf(TextFieldValue()) }
 
     Window(
         title = "Anti AFK",
@@ -63,7 +60,7 @@ fun mainWindow(mainState: MutableState<Boolean>, keyState: MutableState<Boolean>
         state = WindowState(size = WindowSize(800.dp, 700.dp))
     ) {
         DesktopMaterialTheme {
-            Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray)) {
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.DarkGray) {
                 Column {
                     Column {
                         Row {
@@ -84,7 +81,7 @@ fun mainWindow(mainState: MutableState<Boolean>, keyState: MutableState<Boolean>
                         modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
                     )
                     TextField(
-                        value = textState.value, readOnly = true, onValueChange = { textState.value = it },
+                        value = textState, readOnly = true, onValueChange = { textState = it },
                         modifier = Modifier.fillMaxWidth().height(220.dp).background(Color.LightGray)
                     )
                 }
