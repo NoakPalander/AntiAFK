@@ -4,22 +4,18 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import java.awt.FileDialog
-import java.io.File
-import javax.swing.JFileChooser
+import com.antiafk.app.AppState
 
 @Composable
-fun keyItem(text: String, onClick: () -> Unit) {
+private fun keyItem(text: String, onClick: () -> Unit) {
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Text(text)
         Button(modifier = Modifier.padding(horizontal = 15.dp), onClick = onClick) {
@@ -29,14 +25,14 @@ fun keyItem(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun keySection(keys: SnapshotStateList<String>) {
+private fun keySection(state: AppState) {
     val scrollState = rememberScrollState(0)
 
     Box(modifier = Modifier.size(300.dp, 350.dp).padding(horizontal = 20.dp).background(Color.LightGray)) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            keys.forEach { key ->
+            state.keys.forEach { key ->
                 keyItem(key) {
-                    keys.remove(key)
+                    state.keys.remove(key)
                 }
             }
         }
@@ -48,7 +44,7 @@ fun keySection(keys: SnapshotStateList<String>) {
 
 @Composable
 @ExperimentalMaterialApi
-fun optionSection(window: ComposeWindow, keys: SnapshotStateList<String>, keyState: MutableState<Boolean>) {
+private fun optionSection(state: AppState) {
     var random by remember { mutableStateOf(true) }
     var runState by remember { mutableStateOf(true) }
     var alertState by remember { mutableStateOf(false) }
@@ -59,13 +55,14 @@ fun optionSection(window: ComposeWindow, keys: SnapshotStateList<String>, keySta
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Add keys button
                 Button(onClick = {
-                    keyState.value = true
+                    // Enables the key window
+                    state.windows.value["key"]!!.active = true
                 }) {
                     Text("Add keys")
                 }
                 // Remove button
                 Button(onClick = {
-                    keys.clear()
+                    state.keys.clear()
                 }) {
                     Text("Remove all")
                 }
@@ -97,7 +94,7 @@ fun optionSection(window: ComposeWindow, keys: SnapshotStateList<String>, keySta
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Run/Stop button
                 Button(onClick = {
-                    if (keys.isEmpty()) {
+                    if (state.keys.isEmpty()) {
                         alertState = true
                     }
                     else {
@@ -140,14 +137,17 @@ fun optionSection(window: ComposeWindow, keys: SnapshotStateList<String>, keySta
 
 @Composable
 @ExperimentalMaterialApi
-fun mainWindow(keys: SnapshotStateList<String>, mainState: MutableState<Boolean>, keyState: MutableState<Boolean>) {
+fun AppWindow.mainWindow(state: AppState) {
     var textFieldState by remember { mutableStateOf(TextFieldValue()) }
+    val self = this
 
     Window(
         title = "Anti AFK",
-        onCloseRequest = { mainState.value = false },
+        onCloseRequest = { self.dispose(state) },
         resizable = false,
-        state = WindowState(size = DpSize(800.dp, 700.dp))
+        state = WindowState(size = DpSize(800.dp, 700.dp)).also {
+            self.windowState = it
+        }
     ) {
         MaterialTheme {
             Surface(modifier = Modifier.fillMaxSize(), color = Color.DarkGray) {
@@ -155,8 +155,8 @@ fun mainWindow(keys: SnapshotStateList<String>, mainState: MutableState<Boolean>
                     Column {
                         Text("Key pool", color = Color.White, modifier = Modifier.padding(22.dp, 10.dp))
                         Row {
-                            keySection(keys)
-                            optionSection(window, keys, keyState)
+                            keySection(state)
+                            optionSection(state)
                         }
                     }
 
