@@ -14,6 +14,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowSize
@@ -22,14 +23,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-private fun ScrollState.autoScroll() {
-    CoroutineScope(Dispatchers.IO).launch {
+
+private fun ScrollState.autoScroll(scope: CoroutineScope) {
+    scope.launch {
         scrollTo(maxValue)
     }
 }
 
 @Composable
 fun registerKeysWindow(keys: SnapshotStateList<String>, renderState: MutableState<Boolean>) {
+    val scope = rememberCoroutineScope()
+
     var keyState by remember { mutableStateOf(TextFieldValue()) }
     var rawInput by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
@@ -37,19 +41,20 @@ fun registerKeysWindow(keys: SnapshotStateList<String>, renderState: MutableStat
     Window(
         title = "Register keys",
         resizable = false,
-        state = WindowState(size = WindowSize(350.dp, 350.dp)),
+        state = WindowState(size = DpSize(350.dp, 370.dp)),
         onCloseRequest = { renderState.value = false },
         onKeyEvent = {
             if (!rawInput && it.type == KeyEventType.KeyDown) {
-                keyState = TextFieldValue(keyState.text + it.key.toString().substringAfter("Key: ")
-                    .uppercase() + "\n")
+                keyState = TextFieldValue(
+                    text = keyState.text + it.key.toString().substringAfter("Key: ").uppercase() + "\n"
+                )
 
-                scrollState.autoScroll()
+                scrollState.autoScroll(scope)
             }
             true
         }
     ) {
-        DesktopMaterialTheme {
+        MaterialTheme {
             Surface(modifier = Modifier.fillMaxSize(), color = Color.DarkGray) {
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -64,13 +69,13 @@ fun registerKeysWindow(keys: SnapshotStateList<String>, renderState: MutableStat
                         })
                     }
 
-                    Box(modifier = Modifier.height(200.dp).fillMaxWidth()) {
+                    Box(modifier = Modifier.height(240.dp).fillMaxWidth()) {
                         TextField(
                             value = keyState,
                             readOnly = !rawInput,
                             onValueChange = {
                                 keyState = TextFieldValue(it.text.uppercase(), selection = TextRange(it.selection.end))
-                                scrollState.autoScroll()
+                                scrollState.autoScroll(scope)
                             },
                             modifier = Modifier.background(Color.LightGray).fillMaxSize().verticalScroll(scrollState)
                         )
@@ -80,14 +85,15 @@ fun registerKeysWindow(keys: SnapshotStateList<String>, renderState: MutableStat
                         )
                     }
 
-
-                    Row {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         // Add button
-                        Button(modifier = Modifier.padding(top = 10.dp), onClick = {
+                        Button(modifier = Modifier.padding(5.dp), onClick = {
                             if (rawInput) {
+                                // Converts the strings into single unique letter strings elements
                                 keys.addAll(keyState.text.toSet().map { it.toString() })
                             }
                             else {
+                                // Splits the text view and removes the leftover newline
                                 keys.addAll(keyState.text.split("\n").let {
                                     it.take(it.size - 1)
                                 }.toSet().map { it.uppercase() })
@@ -98,7 +104,7 @@ fun registerKeysWindow(keys: SnapshotStateList<String>, renderState: MutableStat
                             Text("Done")
                         }
                         // Clear button
-                        Button(modifier = Modifier.padding(top = 10.dp), onClick = {
+                        Button(modifier = Modifier.padding(5.dp), onClick = {
                             keyState = TextFieldValue()
                         }) {
                             Text("Clear")

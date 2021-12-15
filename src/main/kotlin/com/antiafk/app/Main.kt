@@ -1,5 +1,6 @@
-package com.antiafk.core
+package com.antiafk.app
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,17 +10,17 @@ import com.antiafk.windows.mainWindow
 import com.antiafk.windows.registerKeysWindow
 
 @ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 fun main() = application {
-    val mainWindowState = remember { mutableStateOf(false) }
-    val keyWindowState = remember { mutableStateOf(true) }
+    val mainWindowState = remember { mutableStateOf(true) }
+    val keyWindowState = remember { mutableStateOf(false) }
     val keys = remember { mutableStateListOf<String>() }
 
     if (mainWindowState.value)
         mainWindow(keys, mainWindowState, keyWindowState)
-
-    if (keyWindowState.value)
-        registerKeysWindow(keys, keyWindowState)
     else
         exitApplication()
 
+    if (keyWindowState.value)
+        registerKeysWindow(keys, keyWindowState)
 }
