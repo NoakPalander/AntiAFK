@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
@@ -48,6 +49,7 @@ private fun optionSection(state: AppState) {
     var random by remember { mutableStateOf(true) }
     var runState by remember { mutableStateOf(true) }
     var alertState by remember { mutableStateOf(false) }
+    var path by remember { mutableStateOf("") }
 
     Column {
         Text("Add/Clear available keys", color = Color.White, modifier = Modifier.padding(bottom = 5.dp))
@@ -69,7 +71,15 @@ private fun optionSection(state: AppState) {
             }
         }
 
-        Text("Config file", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
+        Row {
+            Text("Config file", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
+            Text(
+                text = path,
+                color = Color.LightGray,
+                fontStyle = FontStyle.Italic,
+                modifier = Modifier.padding(top = 20.dp, bottom = 5.dp)
+            )
+        }
         Box(modifier = Modifier.background(Color.LightGray).size(255.dp, 50.dp), contentAlignment = Alignment.Center) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Save button
@@ -80,9 +90,9 @@ private fun optionSection(state: AppState) {
                 }
                 // Load button
                 Button(onClick = {
-                    val file = openFileDialog(System.getProperty("user.home"))
-                    
-                    println(file)
+                    state.config = openFileDialog(System.getProperty("user.home"))
+                    if (state.config != null)
+                        path = "| ${state.config!!.name}"
                 }) {
                     Text("Load")
                 }
@@ -142,7 +152,7 @@ fun AppWindow.mainWindow(state: AppState) {
     val self = this
 
     Window(
-        title = "Anti AFK",
+        title = "AntiAFK",
         onCloseRequest = { self.dispose(state) },
         resizable = false,
         state = WindowState(size = DpSize(800.dp, 700.dp)).also {

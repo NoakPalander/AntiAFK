@@ -25,9 +25,12 @@ fun ApplicationScope.app() {
                 exitApplication()
             }
         ),
-        "key" to AppWindow(active = false, onCompose = {
-            registerKeysWindow(state)
-        })
+        "key" to AppWindow(
+            active = false,
+            onCompose = {
+                registerKeysWindow(state)
+            }
+        )
     )
 
     windows.value.forEach { (_, window) ->
