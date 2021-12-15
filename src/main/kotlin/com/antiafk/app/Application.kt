@@ -1,9 +1,7 @@
 package com.antiafk.app
 
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.window.ApplicationScope
 import com.antiafk.windows.AppWindow
 import com.antiafk.windows.mainWindow

@@ -136,7 +136,7 @@ private fun optionSection(state: AppState) {
                 Button(onClick = {
                     alertState = false
                 }) {
-                    Text("Ok")
+                    Text("OK")
                 }
             },
             text = { Text("No keys to press were found, please either add them or load a premade config file.") },
