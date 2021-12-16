@@ -6,9 +6,11 @@ import androidx.compose.ui.window.ApplicationScope
 import com.antiafk.windows.AppWindow
 import com.antiafk.windows.mainWindow
 import com.antiafk.windows.registerKeysWindow
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @Composable
 @ExperimentalMaterialApi
+@ExperimentalSerializationApi
 fun ApplicationScope.app() {
     val windows = remember { mutableStateOf(hashMapOf<String, AppWindow>()) }
     val state = AppState(windows)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,6 +15,13 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import com.antiafk.app.AppState
+import com.antiafk.core.KeySerializer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileNotFoundException
 
 @Composable
 private fun keyItem(text: String, onClick: () -> Unit) {
@@ -45,6 +53,7 @@ private fun keySection(state: AppState) {
 
 @Composable
 @ExperimentalMaterialApi
+@ExperimentalSerializationApi
 private fun optionSection(state: AppState) {
     var random by remember { mutableStateOf(true) }
     var runState by remember { mutableStateOf(true) }
@@ -84,15 +93,31 @@ private fun optionSection(state: AppState) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Save button
                 Button(onClick = {
-
+                    state.config = saveFileDialog(System.getProperty("user.home"))
+                    if (state.config != null) {
+                        File(state.config!!.absolutePath).writeText(Json.encodeToString(KeySerializer(), state.keys))
+                        println(state.config)
+                    }
                 }) {
                     Text("Save")
                 }
                 // Load button
                 Button(onClick = {
-                    state.config = openFileDialog(System.getProperty("user.home"))
-                    if (state.config != null)
-                        path = "| ${state.config!!.name}"
+                    try {
+                        state.config = openFileDialog(System.getProperty("user.home"))
+                        if (state.config != null) {
+                            path = "| ${state.config!!.name}"
+
+                            val contents = File(state.config!!.absolutePath).readText()
+                            state.keys.clear()
+                            state.keys.addAll(Json.decodeFromString(KeySerializer(), contents))
+                            state.console.value = TextFieldValue(state.console.value.text +
+                                "Loaded ${state.config!!.name}\n")
+                        }
+                    }
+                    catch(e: FileNotFoundException) {
+                        println(e)
+                    }
                 }) {
                     Text("Load")
                 }
@@ -147,8 +172,8 @@ private fun optionSection(state: AppState) {
 
 @Composable
 @ExperimentalMaterialApi
+@ExperimentalSerializationApi
 fun AppWindow.mainWindow(state: AppState) {
-    var textFieldState by remember { mutableStateOf(TextFieldValue()) }
     val self = this
 
     Window(
@@ -176,9 +201,9 @@ fun AppWindow.mainWindow(state: AppState) {
                         modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
                     )
                     TextField(
-                        value = textFieldState,
+                        value = state.console.value,
                         readOnly = true,
-                        onValueChange = { textFieldState = it },
+                        onValueChange = { state.console.value = it },
                         modifier = Modifier.fillMaxWidth().height(220.dp).background(Color.LightGray)
                     )
                 }
