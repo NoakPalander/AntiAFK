@@ -4,7 +4,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,12 +12,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
 import com.antiafk.app.AppState
 import com.antiafk.core.KeySerializer
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileNotFoundException
@@ -51,14 +49,12 @@ private fun keySection(state: AppState) {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
 @Composable
-@ExperimentalMaterialApi
-@ExperimentalSerializationApi
 private fun optionSection(state: AppState) {
     var random by remember { mutableStateOf(true) }
     var runState by remember { mutableStateOf(true) }
     var alertState by remember { mutableStateOf(false) }
-    var path by remember { mutableStateOf("") }
 
     Column {
         Text("Add/Clear available keys", color = Color.White, modifier = Modifier.padding(bottom = 5.dp))
@@ -74,6 +70,7 @@ private fun optionSection(state: AppState) {
                 // Remove button
                 Button(onClick = {
                     state.keys.clear()
+                    state.loadedConfigName = ""
                 }) {
                     Text("Remove all")
                 }
@@ -83,7 +80,7 @@ private fun optionSection(state: AppState) {
         Row {
             Text("Config file", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
             Text(
-                text = path,
+                text = state.loadedConfigName,
                 color = Color.LightGray,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(top = 20.dp, bottom = 5.dp)
@@ -106,13 +103,14 @@ private fun optionSection(state: AppState) {
                     try {
                         state.config = openFileDialog(System.getProperty("user.home"))
                         if (state.config != null) {
-                            path = "| ${state.config!!.name}"
+                            state.loadedConfigName = "| ${state.config!!.name}"
 
                             val contents = File(state.config!!.absolutePath).readText()
                             state.keys.clear()
                             state.keys.addAll(Json.decodeFromString(KeySerializer, contents))
-                            state.console.value = TextFieldValue(state.console.value.text +
-                                "Loaded ${state.config!!.name}\n")
+
+                            state.console.log("Hello\n".colored(Color.Black),
+                                "Loaded ${state.config!!.name}\n".colored(Color.Red))
                         }
                     }
                     catch(e: FileNotFoundException) {
@@ -170,9 +168,8 @@ private fun optionSection(state: AppState) {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
 @Composable
-@ExperimentalMaterialApi
-@ExperimentalSerializationApi
 fun AppWindow.mainWindow(state: AppState) {
     val self = this
 
@@ -195,17 +192,7 @@ fun AppWindow.mainWindow(state: AppState) {
                         }
                     }
 
-                    Text(
-                        text = "Console output",
-                        color = Color.White,
-                        modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
-                    )
-                    TextField(
-                        value = state.console.value,
-                        readOnly = true,
-                        onValueChange = { state.console.value = it },
-                        modifier = Modifier.fillMaxWidth().height(220.dp).background(Color.LightGray)
-                    )
+                    state.console.compose(Color.LightGray)
                 }
             }
         }

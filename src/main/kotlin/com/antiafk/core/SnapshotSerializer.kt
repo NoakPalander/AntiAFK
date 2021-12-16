@@ -2,30 +2,31 @@ package com.antiafk.core
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import kotlinx.serialization.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-
-
-@OptIn(InternalSerializationApi::class)
-internal inline fun <reified T: Any> serializer(): KSerializer<List<T>> = ListSerializer(T::class.serializer())
+import kotlinx.serialization.serializer
+import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
-abstract class SnapshotSerializer <T>(private val serializer: KSerializer<List<T>>) : KSerializer<SnapshotStateList<T>> {
-    override val descriptor: SerialDescriptor = SerialDescriptor("Snapshot", serializer.descriptor)
+abstract class SnapshotSerializer<T: Any>(type: KClass<T>): KSerializer<SnapshotStateList<T>> {
+    @OptIn(InternalSerializationApi::class)
+    private val serializer = ListSerializer(type.serializer())
 
-    override fun serialize(encoder: Encoder, value: SnapshotStateList<T>) {
-        serializer.serialize(encoder, value)
-    }
+    override val descriptor: SerialDescriptor = SerialDescriptor("Snapshot", serializer.descriptor)
 
     override fun deserialize(decoder: Decoder): SnapshotStateList<T> {
         val deserialized = serializer.deserialize(decoder)
         return mutableStateListOf<T>().apply {
-            deserialized.forEach {
-                add(it)
-            }
+            deserialized.forEach(::add)
         }
+    }
+
+    override fun serialize(encoder: Encoder, value: SnapshotStateList<T>) {
+        serializer.serialize(encoder, value)
     }
 }

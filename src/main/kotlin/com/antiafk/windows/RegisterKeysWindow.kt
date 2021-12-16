@@ -99,6 +99,9 @@ fun AppWindow.registerKeysWindow(state: AppState) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         // Add button
                         Button(modifier = Modifier.padding(5.dp), onClick = {
+                            if (keyState.text.isNotEmpty())
+                                state.loadedConfigName = ""
+
                             if (rawInput) {
                                 // Converts the strings into single unique letter strings elements
                                 state.keys.addAll(keyState.text.toSet().map { it.toString() })
