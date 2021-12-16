@@ -95,7 +95,7 @@ private fun optionSection(state: AppState) {
                 Button(onClick = {
                     state.config = saveFileDialog(System.getProperty("user.home"))
                     if (state.config != null) {
-                        File(state.config!!.absolutePath).writeText(Json.encodeToString(KeySerializer(), state.keys))
+                        File(state.config!!.absolutePath).writeText(Json.encodeToString(KeySerializer, state.keys))
                         println(state.config)
                     }
                 }) {
@@ -110,7 +110,7 @@ private fun optionSection(state: AppState) {
 
                             val contents = File(state.config!!.absolutePath).readText()
                             state.keys.clear()
-                            state.keys.addAll(Json.decodeFromString(KeySerializer(), contents))
+                            state.keys.addAll(Json.decodeFromString(KeySerializer, contents))
                             state.console.value = TextFieldValue(state.console.value.text +
                                 "Loaded ${state.config!!.name}\n")
                         }

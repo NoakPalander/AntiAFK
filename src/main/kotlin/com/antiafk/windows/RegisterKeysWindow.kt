@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
@@ -28,6 +30,7 @@ private fun ScrollState.autoScroll(scope: CoroutineScope) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppWindow.registerKeysWindow(state: AppState) {
     val scope = rememberCoroutineScope()
@@ -43,18 +46,20 @@ fun AppWindow.registerKeysWindow(state: AppState) {
         state = WindowState(
             size = DpSize(350.dp, 370.dp),
             position = state.windows.value["main"]!!.windowState.position.let {
+                // Spawns the register window in the middle of the main window
                 WindowPosition(it.x + 200.dp, it.y + 200.dp)
             }
         ).also {
            self.windowState = it
         },
-        onCloseRequest = { self.dispose(state) },
+        onCloseRequest = {
+            self.dispose(state)
+        },
         onKeyEvent = {
-            if (!rawInput && it.type == KeyEventType.KeyDown) {
+            if (!rawInput && it.type == KeyEventType.KeyDown && it.key != Key.Unknown) {
                 keyState = TextFieldValue(
                     text = keyState.text + it.key.toString().substringAfter("Key: ").uppercase() + "\n"
                 )
-
                 scrollState.autoScroll(scope)
             }
             true
