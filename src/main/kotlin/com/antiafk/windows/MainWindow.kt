@@ -9,14 +9,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import com.antiafk.app.AppState
 import com.antiafk.core.KeySerializer
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileNotFoundException
@@ -38,7 +39,7 @@ private fun keySection(state: AppState) {
     Box(modifier = Modifier.size(300.dp, 350.dp).padding(horizontal = 20.dp).background(Color.LightGray)) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             state.keys.forEach { key ->
-                keyItem(key) {
+                keyItem(key.second) {
                     state.keys.remove(key)
                 }
             }
@@ -49,7 +50,7 @@ private fun keySection(state: AppState) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun optionSection(state: AppState) {
     var random by remember { mutableStateOf(true) }
@@ -58,7 +59,7 @@ private fun optionSection(state: AppState) {
 
     Column {
         Text("Add/Clear available keys", color = Color.White, modifier = Modifier.padding(bottom = 5.dp))
-        Box(modifier = Modifier.background(Color.LightGray).size(255.dp, 50.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.background(Color.LightGray).size(280.dp, 50.dp), contentAlignment = Alignment.Center) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Add keys button
                 Button(onClick = {
@@ -76,7 +77,6 @@ private fun optionSection(state: AppState) {
                 }
             }
         }
-
         Row {
             Text("Config file", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
             Text(
@@ -86,14 +86,14 @@ private fun optionSection(state: AppState) {
                 modifier = Modifier.padding(top = 20.dp, bottom = 5.dp)
             )
         }
-        Box(modifier = Modifier.background(Color.LightGray).size(255.dp, 50.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.background(Color.LightGray).size(280.dp, 50.dp), contentAlignment = Alignment.Center) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Save button
                 Button(onClick = {
                     state.config = saveFileDialog(System.getProperty("user.home"))
                     if (state.config != null) {
                         File(state.config!!.absolutePath).writeText(Json.encodeToString(KeySerializer, state.keys))
-                        println(state.config)
+                        state.console.log("Saved config '${state.config!!.name}'".colored(Color.Red))
                     }
                 }) {
                     Text("Save")
@@ -108,9 +108,7 @@ private fun optionSection(state: AppState) {
                             val contents = File(state.config!!.absolutePath).readText()
                             state.keys.clear()
                             state.keys.addAll(Json.decodeFromString(KeySerializer, contents))
-
-                            state.console.log("Hello\n".colored(Color.Black),
-                                "Loaded ${state.config!!.name}\n".colored(Color.Red))
+                            state.console.log("Loaded config '${state.config!!.name}'\n".colored(Color.Red))
                         }
                     }
                     catch(e: FileNotFoundException) {
@@ -123,8 +121,8 @@ private fun optionSection(state: AppState) {
         }
 
         Text("Poll", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
-        Box(modifier = Modifier.background(Color.LightGray).size(255.dp, 50.dp), contentAlignment = Alignment.Center) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        Box(modifier = Modifier.background(Color.LightGray).width(280.dp), contentAlignment = Alignment.Center) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 // Run/Stop button
                 Button(onClick = {
                     if (state.keys.isEmpty()) {
@@ -132,8 +130,9 @@ private fun optionSection(state: AppState) {
                     }
                     else {
                         if (runState) {
-                            // Run..
-                        } else {
+                            state.simulator.run(state.keys.map { it.first })
+                        }
+                        else {
                             // Stop..
                         }
 
@@ -143,9 +142,18 @@ private fun optionSection(state: AppState) {
                     Text(if (runState) "Run" else "Stop")
                 }
 
-                // Random order / in order
-                Button(onClick = { random = !random }) {
-                    Text(if (random) "Random" else "In order")
+                Column {
+                    Text("Random order", modifier = Modifier.padding(
+                        top = 14.dp, bottom = 14.dp, start = 15.dp
+                    ))
+
+                    Text("Random delay", modifier = Modifier.padding(
+                        top = 14.dp, bottom = 14.dp, start = 15.dp
+                    ))
+                }
+                Column {
+                    Checkbox(checked = true, onCheckedChange = {})
+                    Checkbox(checked = true, onCheckedChange = {})
                 }
             }
         }
@@ -168,10 +176,10 @@ private fun optionSection(state: AppState) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun AppWindow.mainWindow(state: AppState) {
     val self = this
+    val scrollState = rememberScrollState()
 
     Window(
         title = "AntiAFK",
@@ -192,7 +200,7 @@ fun AppWindow.mainWindow(state: AppState) {
                         }
                     }
 
-                    state.console.compose(Color.LightGray)
+                    state.console.compose(Color.LightGray, scrollState)
                 }
             }
         }

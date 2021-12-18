@@ -10,7 +10,4 @@ data class Config(
     @SerialName("keys")
     @Serializable(with = KeySerializer::class)
     val keys: SnapshotStateList<String>,
-
-    @SerialName("hello")
-    val message: String
 )

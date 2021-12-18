@@ -7,7 +7,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-abstract class SnapshotSerializer<T: Any>(elementSerializer: KSerializer<T>) : KSerializer<SnapshotStateList<T>> {
+abstract class SnapshotSerializer<T>(elementSerializer: KSerializer<T>) : KSerializer<SnapshotStateList<T>> {
     private val delegateSerializer = ListSerializer(elementSerializer)
 
     override fun serialize(encoder: Encoder, value: SnapshotStateList<T>) {

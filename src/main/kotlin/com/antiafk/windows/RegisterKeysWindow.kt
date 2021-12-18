@@ -8,10 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
@@ -36,6 +33,8 @@ fun AppWindow.registerKeysWindow(state: AppState) {
     val scope = rememberCoroutineScope()
     val self = this
 
+    val keys = mutableMapOf<Int, String>()
+
     var keyState by remember { mutableStateOf(TextFieldValue()) }
     var rawInput by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
@@ -57,8 +56,11 @@ fun AppWindow.registerKeysWindow(state: AppState) {
         },
         onKeyEvent = {
             if (!rawInput && it.type == KeyEventType.KeyDown && it.key != Key.Unknown) {
+                val representation = it.key.toString().substringAfter("Key: ").uppercase()
+                keys[it.key.nativeKeyCode] = representation
+
                 keyState = TextFieldValue(
-                    text = keyState.text + it.key.toString().substringAfter("Key: ").uppercase() + "\n"
+                    text = keyState.text + representation + "\n"
                 )
                 scrollState.autoScroll(scope)
             }
@@ -104,13 +106,11 @@ fun AppWindow.registerKeysWindow(state: AppState) {
 
                             if (rawInput) {
                                 // Converts the strings into single unique letter strings elements
-                                state.keys.addAll(keyState.text.toSet().map { it.toString() })
+                                //state.keys.addAll(keyState.text.toSet().map { it.toString() })
                             }
                             else {
-                                // Splits the text view and removes the leftover newline
-                                state.keys.addAll(keyState.text.split("\n").let {
-                                    it.take(it.size - 1)
-                                }.toSet().map { it.uppercase() })
+                                println(keys.toList())
+                                state.keys.addAll(keys.toList())
                             }
 
                             self.dispose(state)
@@ -120,6 +120,7 @@ fun AppWindow.registerKeysWindow(state: AppState) {
                         // Clear button
                         Button(modifier = Modifier.padding(5.dp), onClick = {
                             keyState = TextFieldValue()
+                            keys.clear()
                         }) {
                             Text("Clear")
                         }
