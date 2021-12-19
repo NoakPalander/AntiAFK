@@ -1,15 +1,14 @@
 package com.antiafk.app
 
 import androidx.compose.runtime.*
+import com.antiafk.core.Config
 import com.antiafk.core.Simulator
-import com.antiafk.windows.AppWindow
-import com.antiafk.windows.Console
-import java.io.File
+import com.antiafk.graphics.AppWindow
+import com.antiafk.graphics.Console
 
-class AppState(val windows: MutableState<HashMap<String, AppWindow>>) {
+class AppState(val windows: MutableState<HashMap<String, AppWindow>>, val config: Config) {
     val keys = mutableStateListOf<Pair<Int, String>>()
     val simulator = Simulator()
     val console = Console()
-    var config: File? = null
-    var loadedConfigName by mutableStateOf("")
+    var configLabel by mutableStateOf("")
 }

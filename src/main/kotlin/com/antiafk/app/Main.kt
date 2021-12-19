@@ -7,10 +7,12 @@ import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.window.application
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.awt.Robot
+import java.io.File
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi
 fun main() = application {
-    app()
+    println(File(System.getProperty("compose.application.resources.dir") + "/config.json").readText())
+//app()
 }

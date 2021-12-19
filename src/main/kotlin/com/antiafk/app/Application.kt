@@ -1,19 +1,19 @@
 package com.antiafk.app
 
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ApplicationScope
-import com.antiafk.windows.AppWindow
-import com.antiafk.windows.mainWindow
-import com.antiafk.windows.registerKeysWindow
-import kotlinx.serialization.ExperimentalSerializationApi
+import com.antiafk.core.Config
+import com.antiafk.graphics.AppWindow
+import com.antiafk.graphics.mainWindow
+import com.antiafk.graphics.registerKeysWindow
 
 @Composable
-@ExperimentalMaterialApi
-@ExperimentalSerializationApi
 fun ApplicationScope.app() {
+    val config = Config.load({}.javaClass.getResource("/config.json").path)
     val windows = remember { mutableStateOf(hashMapOf<String, AppWindow>()) }
-    val state = AppState(windows)
+    val state = AppState(windows, config)
 
     windows.value = hashMapOf(
         "main" to AppWindow(

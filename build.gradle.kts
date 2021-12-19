@@ -48,6 +48,8 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "AntiAfk"
             packageVersion = Version.packageVersion
+            copyright = "© 2020 Noak Palander. All rights reserved."
+
         }
     }
 }
