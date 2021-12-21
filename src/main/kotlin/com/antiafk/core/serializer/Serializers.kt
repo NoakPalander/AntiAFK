@@ -1,15 +1,20 @@
 package com.antiafk.core.serializer
 
 import androidx.compose.material.Colors
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.antiafk.core.SnapshotSerializer
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.PairSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull.serializer
+import kotlinx.serialization.json.JsonObject
 
 object KeySerializer : SnapshotSerializer<Pair<Int, String>>(PairSerializer(Int.serializer(), String.serializer())) {
     override val descriptor = buildClassSerialDescriptor("Snapshot") {
@@ -17,43 +22,42 @@ object KeySerializer : SnapshotSerializer<Pair<Int, String>>(PairSerializer(Int.
     }
 }
 
-object ColorSerializer : KSerializer<Color> {
-    override val descriptor = buildClassSerialDescriptor("Color") {
-
-    }
+object ColorSerializer : DeserializationStrategy<Color> {
+    override val descriptor = serialDescriptor<String>()
 
     override fun deserialize(decoder: Decoder): Color {
-        TODO("Not yet implemented")
+        val decoded = decoder.decodeString()
+        return Color(
+            red = decoded.substring(0, 2).toInt(16),
+            green = decoded.substring(2, 4).toInt(16),
+            blue = decoded.substring(4).toInt(16),
+        )
     }
-
-    override fun serialize(encoder: Encoder, value: Color) {
-        TODO("Not yet implemented")
-    }
-
 }
 
-object PalleteSerializer : KSerializer<Colors> {
-    override val descriptor = buildClassSerialDescriptor("Pallete") {
-        element<Color>("primary")
-        element<Color>("primary_variant")
-        element<Color>("secondary")
-        element<Color>("secondary_variant")
-        element<Color>("background")
-        element<Color>("surface")
-        element<Color>("error")
-        element<Color>("on_primary")
-        element<Color>("on_secondary")
-        element<Color>("on_background")
-        element<Color>("on_surface")
-        element<Color>("on_error")
-        element<Boolean>("is_light")
-    }
+object PalletSerializer : DeserializationStrategy<Colors> {
+    private val delegateSerializer = JsonObject.serializer()
+    override val descriptor = JsonObject.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): Colors {
-        TODO("Not yet implemented")
-    }
+        val table = delegateSerializer.deserialize(decoder).map {
+            it.key to Json.decodeFromString(ColorSerializer, it.value.toString())
+        }.toMap()
 
-    override fun serialize(encoder: Encoder, value: Colors) {
-        TODO("Not yet implemented")
+        return Colors(
+            primary = table["primary"]!!,
+            primaryVariant = table["primary_variant"]!!,
+            secondary = table["secondary"]!!,
+            secondaryVariant = table["secondary_variant"]!!,
+            background = table["background"]!!,
+            surface = table["surface"]!!,
+            error = table["error"]!!,
+            onPrimary = table["on_primary"]!!,
+            onSecondary = table["on_secondary"]!!,
+            onBackground = table["on_background"]!!,
+            onSurface = table["on_surface"]!!,
+            onError = table["on_error"]!!,
+            isLight = false
+        )
     }
 }

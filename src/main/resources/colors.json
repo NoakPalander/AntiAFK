@@ -1,0 +1,14 @@
+{
+  "primary": "FFFFFF",
+  "primary_variant": "FFFFFF",
+  "secondary": "FFFFFF",
+  "secondary_variant": "FFFFFF",
+  "background": "FFFFFF",
+  "surface": "FFFFFF",
+  "error": "FFFFFF",
+  "on_primary": "FFFFFF",
+  "on_secondary": "FFFFFF",
+  "on_background": "FFFFFF",
+  "on_surface": "FFFFFF",
+  "on_error": "FFFFFF"
+}
