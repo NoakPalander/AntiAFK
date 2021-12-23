@@ -6,6 +6,7 @@ import androidx.compose.ui.window.application
 import kotlinx.serialization.ExperimentalSerializationApi
 
 
+// TODO: Size-limit the console output
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi

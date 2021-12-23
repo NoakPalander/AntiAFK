@@ -1,4 +1,4 @@
-package com.antiafk.core
+package com.antiafk.core.serializer
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList

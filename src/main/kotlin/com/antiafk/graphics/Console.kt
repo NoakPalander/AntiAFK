@@ -2,6 +2,7 @@ package com.antiafk.graphics
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -66,19 +67,20 @@ class Console {
     }
 
     @Composable
-    fun compose(background: Color, scrollState: ScrollState) {
+    fun compose(scrollState: ScrollState) {
         Text(
             text = "Console output",
-            color = Color.White,
+            color = MaterialTheme.colors.onPrimary,
             modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
         )
 
         Box(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = buffer,
-                readOnly = false,
+                readOnly = true,
                 onValueChange = { buffer = it },
-                modifier = Modifier.fillMaxWidth().height(220.dp).background(background).verticalScroll(scrollState),
+                modifier = Modifier.fillMaxWidth().height(220.dp).background(MaterialTheme.colors.onSurface)
+                    .verticalScroll(scrollState),
                 visualTransformation = transformation
             )
             VerticalScrollbar(

@@ -22,8 +22,12 @@ import java.io.FileNotFoundException
 
 @Composable
 private fun keyItem(text: String, onClick: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-        Text(text)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text, color = MaterialTheme.colors.onPrimary)
         Button(modifier = Modifier.padding(horizontal = 15.dp), onClick = onClick) {
             Text("-")
         }
@@ -34,7 +38,7 @@ private fun keyItem(text: String, onClick: () -> Unit) {
 private fun keySection(state: AppState) {
     val scrollState = rememberScrollState(0)
 
-    Box(modifier = Modifier.size(300.dp, 350.dp).padding(horizontal = 20.dp).background(Color.LightGray)) {
+    Box(modifier = Modifier.size(300.dp, 350.dp).padding(horizontal = 20.dp).background(MaterialTheme.colors.onSurface)) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             state.keys.forEach { key ->
                 keyItem(key.second) {
@@ -60,7 +64,10 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
 
     Column {
         Text("Add/Clear available keys", color = Color.White, modifier = Modifier.padding(bottom = 5.dp))
-        Box(modifier = Modifier.background(Color.LightGray).size(280.dp, 50.dp), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.size(280.dp, 50.dp).background(MaterialTheme.colors.onSurface),
+            contentAlignment = Alignment.Center
+        ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Add keys button
                 Button(onClick = {
@@ -87,7 +94,10 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                 modifier = Modifier.padding(top = 20.dp, bottom = 5.dp)
             )
         }
-        Box(modifier = Modifier.background(Color.LightGray).size(280.dp, 50.dp), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.size(280.dp, 50.dp).background(MaterialTheme.colors.onSurface),
+            contentAlignment = Alignment.Center
+        ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 // Save button
                 Button(onClick = {
@@ -122,7 +132,10 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
         }
 
         Text("Options", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
-        Box(modifier = Modifier.background(Color.LightGray).width(280.dp), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.width(280.dp).background(MaterialTheme.colors.onSurface),
+            contentAlignment = Alignment.Center
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -153,16 +166,24 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                 }
 
                 Column {
-                    Text("Random order", modifier = Modifier.padding(
-                        top = 14.dp, bottom = 14.dp, start = 15.dp
-                    ))
+                    Text(
+                        text = "Random order",
+                        modifier = Modifier.padding(top = 14.dp, bottom = 14.dp, start = 15.dp),
+                        color = MaterialTheme.colors.onPrimary
+                    )
 
-                    Text("Random delay", modifier = Modifier.padding(
-                        top = 14.dp, bottom = 14.dp, start = 15.dp
-                    ))
+                    Text(
+                        text = "Random delay",
+                        modifier = Modifier.padding(top = 14.dp, bottom = 14.dp, start = 15.dp),
+                        color = MaterialTheme.colors.onPrimary
+                    )
                 }
                 Column {
-                    Checkbox(checked = randomOrder, onCheckedChange = { randomOrder = !randomOrder })
+                    Checkbox(
+                        checked = randomOrder,
+                        onCheckedChange = { randomOrder = !randomOrder },
+                    )
+
                     Checkbox(checked = randomDelay, onCheckedChange = { randomDelay = !randomDelay })
                 }
             }
@@ -199,18 +220,22 @@ fun AppWindow.mainWindow(state: AppState) {
             self.windowState = it
         }
     ) {
-        darkTheme(pallet = state.config.pallet!!) {
-            Surface(modifier = Modifier.fillMaxSize(), color = Color.DarkGray) {
+        MaterialTheme(colors = state.config.pallet) {
+            Surface(modifier = Modifier.fillMaxSize()) {
                 Column {
                     Column {
-                        Text("Key pool", color = Color.White, modifier = Modifier.padding(22.dp, 10.dp))
+                        Text(
+                            text = "Key pool",
+                            modifier = Modifier.padding(22.dp, 10.dp),
+                            color = MaterialTheme.colors.onPrimary
+                        )
                         Row {
                             keySection(state)
                             optionSection(state, scrollState)
                         }
                     }
 
-                    state.console.compose(Color.LightGray, scrollState)
+                    state.console.compose(scrollState)
                 }
             }
         }
