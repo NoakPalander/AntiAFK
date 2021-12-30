@@ -6,7 +6,7 @@ import androidx.compose.ui.window.application
 import kotlinx.serialization.ExperimentalSerializationApi
 
 
-// TODO: Size-limit the console output
+// TODO: Size-limit the console output && Bug: UI not "catching up"
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi

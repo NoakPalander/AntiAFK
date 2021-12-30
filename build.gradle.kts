@@ -1,6 +1,8 @@
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 
 object Version {
     const val serialization = "1.3.1"
@@ -13,6 +15,7 @@ object Version {
 plugins {
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.serialization") version "1.5.31"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jetbrains.compose") version "1.0.0"
 }
 
@@ -41,6 +44,14 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
 }
 
+tasks.withType<ShadowJar> {
+    archiveFileName.set("AntiAfk.jar")
+    mergeServiceFiles()
+    manifest {
+        attributes(mapOf("Main-Class" to "com.antiafk.app.MainKt"))
+    }
+}
+
 compose.desktop {
     application {
         mainClass = "com.antiafk.app.MainKt"
@@ -49,7 +60,6 @@ compose.desktop {
             packageName = "AntiAfk"
             packageVersion = Version.packageVersion
             copyright = "© 2020 Noak Palander. All rights reserved."
-
         }
     }
 }

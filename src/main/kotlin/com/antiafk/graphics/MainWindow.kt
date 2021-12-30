@@ -15,6 +15,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import com.antiafk.app.AppState
 import com.antiafk.core.serializer.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.File
