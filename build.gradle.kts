@@ -63,3 +63,10 @@ compose.desktop {
         }
     }
 }
+
+tasks.register<Copy>("bin") {
+    dependsOn("shadowJar")
+    from("$buildDir/libs/")
+    include("AntiAfk.jar")
+    into("$rootDir/bin")
+}
