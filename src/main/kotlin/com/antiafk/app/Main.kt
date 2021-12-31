@@ -5,7 +5,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.application
 import kotlinx.serialization.ExperimentalSerializationApi
 
-
+// TODO: Make scrollbars visible
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi

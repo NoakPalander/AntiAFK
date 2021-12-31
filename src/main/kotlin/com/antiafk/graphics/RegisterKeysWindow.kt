@@ -1,7 +1,8 @@
 package com.antiafk.graphics
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,7 +10,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -31,13 +31,12 @@ private fun ScrollState.autoScroll(scope: CoroutineScope) {
 @Composable
 fun AppWindow.registerKeysWindow(state: AppState) {
     val scope = rememberCoroutineScope()
+    val keys = mutableMapOf<Int, String>()
     val self = this
 
-    val keys = mutableMapOf<Int, String>()
-
-    var keyState by remember { mutableStateOf(TextFieldValue()) }
     var rawInput by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val console by remember { Console(editable = true) }
 
     Window(
         title = "Register keys",
@@ -55,71 +54,74 @@ fun AppWindow.registerKeysWindow(state: AppState) {
             self.dispose(state)
         },
         onKeyEvent = {
+            // Key detection
             if (!rawInput && it.type == KeyEventType.KeyDown && it.key != Key.Unknown) {
                 val representation = it.key.toString().substringAfter("Key: ").uppercase()
                 keys[it.key.nativeKeyCode] = representation
 
-                keyState = TextFieldValue(
-                    text = keyState.text + representation + "\n"
-                )
+                console.write("$representation\n".colored(Color.White))
                 scrollState.autoScroll(scope)
             }
             true
         }
     ) {
-        MaterialTheme {
-            Surface(modifier = Modifier.fillMaxSize(), color = Color.DarkGray) {
+        MaterialTheme(colors = state.config.pallet) {
+            Surface(modifier = Modifier.fillMaxSize()) {
                 Column {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        Text("Raw input")
-                        Checkbox(checked = rawInput, onCheckedChange = {
-                            rawInput = it
-                        })
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Raw input", color = MaterialTheme.colors.onPrimary)
+                        Checkbox(
+                            checked = rawInput,
+                            onCheckedChange = { rawInput = it },
+                            colors = CheckboxDefaults.colors(
+                                checkmarkColor = MaterialTheme.colors.onPrimary,
+                                checkedColor = MaterialTheme.colors.primary,
+                                uncheckedColor = MaterialTheme.colors.primary
+                            )
+                        )
 
-                        Text("Record presses")
-                        Checkbox(checked = !rawInput, onCheckedChange = {
-                            rawInput = !it
-                        })
+                        Text("Record presses", color = MaterialTheme.colors.onPrimary)
+                        Checkbox(
+                            checked = !rawInput,
+                            onCheckedChange = { rawInput = !it },
+                            colors = CheckboxDefaults.colors(
+                                checkmarkColor = MaterialTheme.colors.onPrimary,
+                                checkedColor = MaterialTheme.colors.primary,
+                                uncheckedColor = MaterialTheme.colors.primary
+                            )
+                        )
                     }
 
-                    Box(modifier = Modifier.height(240.dp).fillMaxWidth()) {
-                        TextField(
-                            value = keyState,
-                            readOnly = !rawInput,
-                            onValueChange = {
-                                keyState = TextFieldValue(it.text.uppercase(), selection = TextRange(it.selection.end))
-                                scrollState.autoScroll(scope)
-                            },
-                            modifier = Modifier.background(Color.LightGray).fillMaxSize().verticalScroll(scrollState)
-                        )
-                        VerticalScrollbar(
-                            modifier = Modifier.fillMaxHeight().align(Alignment.CenterEnd),
-                            adapter = rememberScrollbarAdapter(scrollState)
-                        )
-                    }
-
+                    console.compose(height = 240.dp, scrollState = scrollState)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         // Add button
                         Button(modifier = Modifier.padding(5.dp), onClick = {
-                            if (keyState.text.isNotEmpty())
+                            if (console.text.isNotEmpty())
                                 state.configLabel = ""
 
                             if (rawInput) {
-                                // Converts the strings into single unique letter strings elements
-                                //state.keys.addAll(keyState.text.toSet().map { it.toString() })
+                                // Converts the strings into single unique letter
+                                state.keys.addAll(console.text.filter(Char::isLetter).map(Char::uppercaseChar).map {
+                                    it.code to it.toString()
+                                }.toSet())
                             }
                             else {
-                                println(keys.toList())
+                                // Does the same as the above, but it's handled on-input instead of afterwards
                                 state.keys.addAll(keys.toList())
                             }
 
+                            // Disposes this window
                             self.dispose(state)
                         }) {
                             Text("Done")
                         }
                         // Clear button
                         Button(modifier = Modifier.padding(5.dp), onClick = {
-                            keyState = TextFieldValue()
+                            console.clear()
                             keys.clear()
                         }) {
                             Text("Clear")

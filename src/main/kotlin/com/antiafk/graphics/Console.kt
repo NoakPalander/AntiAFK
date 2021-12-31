@@ -1,9 +1,11 @@
 package com.antiafk.graphics
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,17 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.Dp
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.reflect.KProperty
 
 fun String.colored(color: Color): AnnotatedString {
     return AnnotatedString.Builder().apply {
@@ -34,14 +36,12 @@ fun String.colored(color: Color): AnnotatedString {
     }.toAnnotatedString()
 }
 
-class Console {
+class Console(private val editable: Boolean = false) {
     private val transformation = VisualTransformation { text -> TransformedText(text, OffsetMapping.Identity) }
     private var buffer by mutableStateOf(TextFieldValue())
+    val text: String
+        get() = buffer.text
 
-    private val datetime
-        get() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).let {
-            "[${it.dayOfMonth}/${it.monthNumber}-${it.year}, ${it.hour}:${it.minute}:${it.second}]:"
-        }
 
     fun clear() {
         buffer = TextFieldValue()
@@ -49,8 +49,12 @@ class Console {
 
     // Logs color formatted strings with timestamps
     fun log(vararg str: AnnotatedString) {
+        val dt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).let {
+            "[${it.dayOfMonth}/${it.monthNumber}-${it.year}, ${it.hour}:${it.minute}:${it.second}]:"
+        }
+
         val newText = AnnotatedString.Builder().apply {
-            append("$datetime ".colored(Color.Blue))
+            append("$dt ".colored(Color.Black))
             str.forEach(::append)
         }.toAnnotatedString()
 
@@ -66,20 +70,35 @@ class Console {
         buffer = TextFieldValue(buffer.annotatedString + newText)
     }
 
-    @Composable
-    fun compose(scrollState: ScrollState) {
-        Text(
-            text = "Console output",
-            color = MaterialTheme.colors.onPrimary,
-            modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
-        )
+    // Raw annotated strings
+    fun write(vararg str: AnnotatedString) {
+        val newText = AnnotatedString.Builder().apply {
+            str.forEach(::append)
+        }.toAnnotatedString()
 
-        Box(modifier = Modifier.fillMaxWidth()) {
+        buffer = TextFieldValue(buffer.annotatedString + transformation.filter(newText).text)
+    }
+
+    @Composable
+    fun compose(height: Dp, scrollState: ScrollState) {
+        Box(modifier = Modifier.fillMaxWidth().height(height)) {
             TextField(
                 value = buffer,
-                readOnly = true,
-                onValueChange = { buffer = it },
-                modifier = Modifier.fillMaxWidth().height(220.dp).background(MaterialTheme.colors.onSurface)
+                readOnly = !editable,
+                onValueChange = {
+                    buffer = if (editable) {
+                        clear()
+                        write(it.text.colored(Color.White))
+                        TextFieldValue(
+                            transformation.filter(buffer.annotatedString).text,
+                            TextRange(it.selection.end)
+                        )
+                    }
+                    else {
+                        it
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().height(height).background(MaterialTheme.colors.onSurface)
                     .verticalScroll(scrollState),
                 visualTransformation = transformation
             )
@@ -90,3 +109,6 @@ class Console {
         }
     }
 }
+
+// for 'by remember' delegate
+operator fun Console.getValue(thisRef: Any?, property: KProperty<*>): Console = this

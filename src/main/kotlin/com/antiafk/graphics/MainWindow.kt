@@ -83,7 +83,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                     state.keys.clear()
                     state.configLabel = ""
                 }) {
-                    Text("Remove all")
+                    Text("Clear keys")
                 }
             }
         }
@@ -106,7 +106,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                     state.config.saveFile = saveFileDialog(System.getProperty("user.home"))
                     if (state.config.saveFile != null) {
                         File(state.config.saveFile!!.absolutePath).writeText(Json.encodeToString(KeySerializer, state.keys))
-                        state.console.log("Saved config '${state.config.saveFile!!.name}'".colored(Color.Red))
+                        state.console.log("Saved config '${state.config.saveFile!!.name}'".colored(Color.Green))
                     }
                 }) {
                     Text("Save")
@@ -121,7 +121,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                             val contents = File(state.config.saveFile!!.absolutePath).readText()
                             state.keys.clear()
                             state.keys.addAll(Json.decodeFromString(KeySerializer, contents))
-                            state.console.log("Loaded config '${state.config.saveFile!!.name}'\n".colored(Color.Red))
+                            state.console.log("Loaded config '${state.config.saveFile!!.name}'\n".colored(Color.Green))
                         }
                     }
                     catch(e: FileNotFoundException) {
@@ -184,9 +184,22 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                     Checkbox(
                         checked = randomOrder,
                         onCheckedChange = { randomOrder = !randomOrder },
+                        colors = CheckboxDefaults.colors(
+                            checkmarkColor = MaterialTheme.colors.onPrimary,
+                            checkedColor = MaterialTheme.colors.primary,
+                            uncheckedColor = MaterialTheme.colors.primary
+                        )
                     )
 
-                    Checkbox(checked = randomDelay, onCheckedChange = { randomDelay = !randomDelay })
+                    Checkbox(
+                        checked = randomDelay,
+                        onCheckedChange = { randomDelay = !randomDelay },
+                        colors = CheckboxDefaults.colors(
+                            checkmarkColor = MaterialTheme.colors.onPrimary,
+                            checkedColor = MaterialTheme.colors.primary,
+                            uncheckedColor = MaterialTheme.colors.primary
+                        )
+                    )
                 }
             }
         }
@@ -236,8 +249,12 @@ fun AppWindow.mainWindow(state: AppState) {
                             optionSection(state, scrollState)
                         }
                     }
-
-                    state.console.compose(scrollState)
+                    Text(
+                        text = "Console output",
+                        color = MaterialTheme.colors.onPrimary,
+                        modifier = Modifier.padding(top = 20.dp, bottom = 10.dp, start = 22.dp)
+                    )
+                    state.console.compose(height = 220.dp, scrollState = scrollState)
                 }
             }
         }
