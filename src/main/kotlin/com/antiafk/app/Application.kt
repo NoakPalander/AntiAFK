@@ -38,7 +38,7 @@ fun ApplicationScope.app() {
             }
         ),
         "key" to AppWindow(
-            active = true,
+            active = false,
             onCompose = {
                 registerKeysWindow(state)
             }
