@@ -1,14 +1,14 @@
 {
   "primary": "#541e6c",
-  "primary_variant": "FFFFFF",
-  "secondary": "FFFFFF",
-  "secondary_variant": "FFFFFF",
+  "primary_variant": "#FFF",
+  "secondary": "#414141",
+  "secondary_variant": "#212121",
   "background": "#000",
   "surface": "#212121",
-  "error": "FFFFFF",
-  "on_primary": "FFFFFF",
-  "on_secondary": "FFFFFF",
-  "on_background": "FFFFFF",
+  "error": "#FFF",
+  "on_primary": "#FFF",
+  "on_secondary": "#FFF",
+  "on_background": "#FFF",
   "on_surface": "#7251b2",
-  "on_error": "FFFFFF"
+  "on_error": "#FFF"
 }

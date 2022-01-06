@@ -1,5 +1,6 @@
 package com.antiafk.graphics
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -14,9 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import com.antiafk.app.AppState
-import com.antiafk.core.serializer.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.antiafk.core.serializer.KeySerializer
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -40,7 +39,7 @@ private fun keyItem(text: String, onClick: () -> Unit) {
 private fun keySection(state: AppState) {
     val scrollState = rememberScrollState(0)
 
-    Box(modifier = Modifier.size(300.dp, 350.dp).padding(horizontal = 20.dp).background(MaterialTheme.colors.onSurface)) {
+    Box(modifier = Modifier.size(300.dp, 365.dp).padding(horizontal = 20.dp).background(MaterialTheme.colors.onSurface)) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             state.keys.forEach { key ->
                 keyItem(key.second) {
@@ -67,7 +66,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
     Column {
         Text("Add/Clear available keys", color = Color.White, modifier = Modifier.padding(bottom = 5.dp))
         Box(
-            modifier = Modifier.size(280.dp, 50.dp).background(MaterialTheme.colors.onSurface),
+            modifier = Modifier.size(300.dp, 50.dp).background(MaterialTheme.colors.onSurface),
             contentAlignment = Alignment.Center
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -97,7 +96,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
             )
         }
         Box(
-            modifier = Modifier.size(280.dp, 50.dp).background(MaterialTheme.colors.onSurface),
+            modifier = Modifier.size(300.dp, 50.dp).background(MaterialTheme.colors.onSurface),
             contentAlignment = Alignment.Center
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -135,7 +134,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
 
         Text("Options", color = Color.White, modifier = Modifier.padding(top = 20.dp, bottom = 5.dp))
         Box(
-            modifier = Modifier.width(280.dp).background(MaterialTheme.colors.onSurface),
+            modifier = Modifier.width(300.dp).background(MaterialTheme.colors.onSurface),
             contentAlignment = Alignment.Center
         ) {
             Row(
@@ -150,15 +149,17 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                     }
                     else {
                         if (runState) {
-                            state.simulator.run(state.keys.toTypedArray(), randomOrder, randomDelay, onRelease = {
-                                scope.launch {
+                            scope.launch {
+                                state.simulator.run(state.keys.toTypedArray(), randomOrder, randomDelay, onRelease = {
                                     state.console.log("'${it}' was pressed.\n".colored(Color.Black))
                                     scrollState.scrollTo(scrollState.maxValue)
-                                }
-                            })
+                                })
+                            }
                         }
                         else {
-                            state.simulator.stop()
+                            scope.launch {
+                                state.simulator.stop()
+                            }
                         }
 
                         runState = !runState

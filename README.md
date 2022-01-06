@@ -21,3 +21,6 @@ All are handled through gradle:
 * Jetbrains compose
 * kotlinx serialization, datetime and coroutines
 * ShadowJar
+
+## License
+The project is under the GPL 3.0 license, see the LICENSE file for more information.

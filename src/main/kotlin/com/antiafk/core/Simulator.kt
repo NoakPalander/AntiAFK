@@ -5,20 +5,23 @@ import java.awt.Robot
 
 class Simulator {
     private val robot = Robot()
-    private var running: Boolean = false
+    private var task: Job? = null
 
     // TODO: Generate an actual random
     private fun postDelay(): Long {
         return 500
     }
 
-    fun run(keys: Array<Pair<Int, String>>, randomOrder: Boolean, randomDelay: Boolean,
-                    onPress: (String) -> Unit = {}, onRelease: (String) -> Unit = {}) {
-
-        if (!running) {
-            running = true
-            CoroutineScope(Dispatchers.IO).launch {
-                while (running) {
+    suspend fun run(
+        keys: Array<Pair<Int, String>>,
+        randomOrder: Boolean,
+        randomDelay: Boolean,
+        onPress: suspend (String) -> Unit = {},
+        onRelease: suspend (String) -> Unit = {})
+    {
+        withContext(Dispatchers.IO) {
+            task = launch {
+                while(true) {
                     if (randomOrder)
                         keys.shuffle()
 
@@ -32,11 +35,11 @@ class Simulator {
                         delay(if (randomDelay) postDelay() else 1000)
                     }
                 }
-            }
+            }.also(Job::start)
         }
     }
 
-    fun stop() {
-        running = false
+    suspend fun stop() {
+        task?.cancelAndJoin()
     }
 }

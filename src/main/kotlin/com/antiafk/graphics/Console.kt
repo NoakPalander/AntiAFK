@@ -84,7 +84,7 @@ class Console(private val editable: Boolean = false) {
         Box(modifier = Modifier.fillMaxWidth().height(height)) {
             TextField(
                 value = buffer,
-                readOnly = !editable,
+                readOnly = false,
                 onValueChange = {
                     buffer = if (editable) {
                         clear()
@@ -104,11 +104,15 @@ class Console(private val editable: Boolean = false) {
             )
             VerticalScrollbar(
                 modifier = Modifier.fillMaxHeight().align(Alignment.CenterEnd),
-                adapter = rememberScrollbarAdapter(scrollState)
+                adapter = rememberScrollbarAdapter(scrollState),
+                style = LocalScrollbarStyle.current.copy(
+                    unhoverColor = MaterialTheme.colors.secondary,
+                    hoverColor = MaterialTheme.colors.secondaryVariant
+                )
             )
         }
     }
 }
 
-// for 'by remember' delegate
+// For delegates
 operator fun Console.getValue(thisRef: Any?, property: KProperty<*>): Console = this

@@ -13,12 +13,14 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.antiafk.app.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.lang.IllegalArgumentException
 
 
 private fun ScrollState.autoScroll(scope: CoroutineScope) {
@@ -43,9 +45,13 @@ fun AppWindow.registerKeysWindow(state: AppState) {
         resizable = false,
         state = WindowState(
             size = DpSize(350.dp, 370.dp),
-            position = state.windows.value["main"]!!.windowState.position.let {
-                // Spawns the register window in the middle of the main window
-                WindowPosition(it.x + 200.dp, it.y + 200.dp)
+            position = state.windows.value["main"]!!.windowState.let {
+                if (it.position.isSpecified) {
+                    WindowPosition(it.position.x + 200.dp, it.position.y + 200.dp)
+                }
+                else {
+                    WindowPosition.PlatformDefault
+                }
             }
         ).also {
            self.windowState = it
