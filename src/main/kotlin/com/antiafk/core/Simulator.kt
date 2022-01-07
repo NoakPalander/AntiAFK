@@ -15,7 +15,7 @@ class Simulator {
     suspend fun run(
         keys: Array<Pair<Int, String>>,
         randomOrder: Boolean,
-        randomDelay: Boolean,
+        postDelay: PostDelay,
         onPress: suspend (String) -> Unit = {},
         onRelease: suspend (String) -> Unit = {})
     {
@@ -32,7 +32,7 @@ class Simulator {
                         robot.keyRelease(code)
                         onRelease(key)
 
-                        delay(if (randomDelay) postDelay() else 1000)
+                        postDelay.sleep()
                     }
                 }
             }.also(Job::start)

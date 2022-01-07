@@ -45,7 +45,7 @@ fun ApplicationScope.app() {
         )
     )
 
-    windows.value.forEach { (_, window) ->
+    windows.value.values.forEach { window ->
         window.compose(state)
     }
 }
