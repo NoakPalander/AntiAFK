@@ -222,7 +222,7 @@ private fun optionSection(state: AppState, scrollState: ScrollState) {
                                 scope.launch {
                                     state.simulator.run(
                                         keys = state.keys.toTypedArray(),
-                                        randomOrder = randomOrder,
+                                        shuffle = randomOrder,
                                         postDelay = postDelay,
                                         onRelease = {
                                             state.console.log("'${it}' was pressed.\n".colored(Color.Black))

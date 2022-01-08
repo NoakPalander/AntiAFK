@@ -7,22 +7,17 @@ class Simulator {
     private val robot = Robot()
     private var task: Job? = null
 
-    // TODO: Generate an actual random
-    private fun postDelay(): Long {
-        return 500
-    }
-
     suspend fun run(
         keys: Array<Pair<Int, String>>,
-        randomOrder: Boolean,
+        shuffle: Boolean,
         postDelay: PostDelay,
         onPress: suspend (String) -> Unit = {},
         onRelease: suspend (String) -> Unit = {})
     {
         withContext(Dispatchers.IO) {
             task = launch {
-                while(true) {
-                    if (randomOrder)
+                while (true) {
+                    if (shuffle)
                         keys.shuffle()
 
                     keys.forEach { (code, key) ->
@@ -35,7 +30,7 @@ class Simulator {
                         postDelay.sleep()
                     }
                 }
-            }.also(Job::start)
+            }
         }
     }
 
